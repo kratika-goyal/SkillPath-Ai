@@ -1,12 +1,7 @@
-import Navbar from "./components/layout/Navbar";
+import AboutPage from "./pages/AboutPage";
 
 function App() {
-  return (
-    <>
-    <h1>Skill Path Ai</h1>
-    <Navbar/>
-    </>
-  )
+  return <AboutPage />;
 }
 
-export default App
+export default App;
