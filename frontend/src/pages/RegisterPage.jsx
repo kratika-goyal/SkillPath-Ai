@@ -1,24 +1,28 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { FiZap, FiMail, FiLock, FiEye, FiEyeOff } from 'react-icons/fi'
+import { FiZap, FiEye, FiEyeOff } from 'react-icons/fi'
 import { useAuth } from '../context/AuthContext'
 import InputField from '../components/ui/InputField'
 import Button from '../components/ui/Button'
 import toast from 'react-hot-toast'
 
-const LoginPage = () => {
+const RegisterPage = () => {
   const navigate = useNavigate()
-  const { login } = useAuth()
-  const [form, setForm] = useState({ email: '', password: '' })
+  const { register } = useAuth()
+  const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '' })
   const [errors, setErrors] = useState({})
   const [isLoading, setIsLoading] = useState(false)
   const [showPass, setShowPass] = useState(false)
 
+  const set = (field) => (e) => setForm({ ...form, [field]: e.target.value })
+
   const validate = () => {
     const e = {}
+    if (!form.name.trim()) e.name = 'Name is required'
     if (!form.email) e.email = 'Email is required'
     else if (!/\S+@\S+\.\S+/.test(form.email)) e.email = 'Invalid email'
-    if (!form.password) e.password = 'Password is required'
+    if (!form.password || form.password.length < 6) e.password = 'Password must be at least 6 characters'
+    if (form.password !== form.confirm) e.confirm = 'Passwords do not match'
     return e
   }
 
@@ -28,11 +32,11 @@ const LoginPage = () => {
     if (Object.keys(errs).length) { setErrors(errs); return }
     setIsLoading(true)
     try {
-      const user = await login(form.email, form.password)
-      toast.success(`Welcome back, ${user.name}!`)
-      navigate(user.role === 'admin' ? '/admin' : '/dashboard')
+      await register(form.name.trim(), form.email, form.password)
+      toast.success('Account created! Let\'s set up your learning path.')
+      navigate('/onboarding')
     } catch (err) {
-      const msg = err.response?.data?.message || 'Login failed'
+      const msg = err.response?.data?.message || 'Registration failed'
       toast.error(msg)
       setErrors({ general: msg })
     } finally {
@@ -47,8 +51,8 @@ const LoginPage = () => {
           <div className="auth-card__logo">
             <FiZap /><span>SkillPath <span className="gradient-text">AI</span></span>
           </div>
-          <h2 className="auth-card__title">Welcome Back</h2>
-          <p className="auth-card__subtitle">Sign in to continue your learning journey</p>
+          <h2 className="auth-card__title">Create Your Account</h2>
+          <p className="auth-card__subtitle">Start your AI-powered learning journey today — free forever</p>
         </div>
 
         <form onSubmit={handleSubmit} className="auth-form">
@@ -57,39 +61,31 @@ const LoginPage = () => {
               {errors.general}
             </div>
           )}
-          <InputField
-            label="Email" id="email" type="email"
-            value={form.email} onChange={e => setForm({ ...form, email: e.target.value })}
-            placeholder="you@example.com" error={errors.email} required autoComplete="email"
-          />
+          <InputField label="Full Name" id="name" value={form.name} onChange={set('name')} placeholder="Alex Johnson" error={errors.name} required />
+          <InputField label="Email" id="email" type="email" value={form.email} onChange={set('email')} placeholder="you@example.com" error={errors.email} required autoComplete="email" />
           <div className="input-group">
             <label htmlFor="password" className="input-label">Password <span style={{ color: 'var(--color-error)' }}>*</span></label>
             <div style={{ position: 'relative' }}>
-              <input
-                id="password" type={showPass ? 'text' : 'password'}
-                value={form.password} onChange={e => setForm({ ...form, password: e.target.value })}
-                placeholder="Your password" autoComplete="current-password"
-                className={`input-field ${errors.password ? 'input-field--error' : ''}`}
-                style={{ paddingRight: 44 }}
-              />
-              <button type="button" onClick={() => setShowPass(!showPass)}
-                style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer', fontSize: '1.1rem' }}>
+              <input id="password" type={showPass ? 'text' : 'password'} value={form.password} onChange={set('password')}
+                placeholder="Min 6 characters" className={`input-field ${errors.password ? 'input-field--error' : ''}`} style={{ paddingRight: 44 }} />
+              <button type="button" onClick={() => setShowPass(!showPass)} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer', fontSize: '1.1rem' }}>
                 {showPass ? <FiEyeOff /> : <FiEye />}
               </button>
             </div>
             {errors.password && <span className="input-error-msg">{errors.password}</span>}
           </div>
+          <InputField label="Confirm Password" id="confirm" type="password" value={form.confirm} onChange={set('confirm')} placeholder="Repeat password" error={errors.confirm} required />
           <Button type="submit" variant="primary" isLoading={isLoading} className="btn--full">
-            Sign In
+            Create Account — It's Free
           </Button>
         </form>
 
         <p className="auth-footer">
-          Don&apos;t have an account? <Link to="/register">Create one free</Link>
+          Already have an account? <Link to="/login">Sign in</Link>
         </p>
       </div>
     </div>
   )
 }
 
-export default LoginPage
+export default RegisterPage
