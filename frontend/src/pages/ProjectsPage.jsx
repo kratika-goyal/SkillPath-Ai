@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { FiBookmark, FiZap } from 'react-icons/fi'
+import { FiZap } from 'react-icons/fi'
 import DashboardLayout from '../components/layout/DashboardLayout'
 import Badge from '../components/ui/Badge'
 import Spinner from '../components/ui/Spinner'
@@ -9,11 +9,10 @@ import toast from 'react-hot-toast'
 
 const difficultyVariant = { beginner: 'success', intermediate: 'warning', advanced: 'error' }
 
-const ProjectCard = ({ project, onSave }) => (
+const ProjectCard = ({ project}) => (
   <div className="card card--hover" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+    <div style={{ display: 'flex', alignItems: 'flex-start' }}>
       <Badge variant={difficultyVariant[project.difficulty] || 'neutral'}>{project.difficulty}</Badge>
-      <button onClick={() => onSave(project)} className="btn btn--ghost btn--sm"><FiBookmark /></button>
     </div>
     <h3 style={{ fontSize: 'var(--text-base)' }}>{project.title}</h3>
     <p style={{ fontSize: 'var(--text-sm)', flex: 1 }}>{project.description}</p>
@@ -47,15 +46,6 @@ const ProjectsPage = () => {
       .finally(() => setIsLoading(false))
   }, [])
 
-  const handleSave = async (project) => {
-    try {
-      await api.post('/projects/save', project)
-      toast.success('Project saved!')
-    } catch {
-      toast.error('Could not save project')
-    }
-  }
-
   const filtered = filter === 'all' ? projects : projects.filter(p => p.difficulty === filter)
 
   return (
@@ -65,7 +55,9 @@ const ProjectsPage = () => {
           <h1 style={{ fontSize: 'var(--text-3xl)', marginBottom: 'var(--space-2)' }}>
             Project <span className="gradient-text">Ideas</span>
           </h1>
-          <p>AI-recommended projects matched to your skill level. Build a real portfolio.</p>
+          <p>
+Explore AI-generated project ideas across Beginner, Intermediate, and Advanced levels to build a strong portfolio.
+</p>
         </div>
 
         <div style={{ marginBottom: 'var(--space-6)' }}>
@@ -83,7 +75,7 @@ const ProjectsPage = () => {
           </div>
         ) : (
           <div className="grid-3">
-            {filtered.map((p, i) => <ProjectCard key={i} project={p} onSave={handleSave} />)}
+            {filtered.map((p, i) => <ProjectCard key={i} project={p}/>)}
           </div>
         )}
       </div>

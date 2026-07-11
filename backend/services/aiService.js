@@ -78,20 +78,36 @@ export const generateProjectRecommendations = async (difficulty) => {
     return generateFallbackProjects(difficulty);
   }
 
-  const prompt = `
-    Suggest 3 project ideas for a software development student at the "${difficulty}" level.
-    
-    Return ONLY a valid JSON array with this structure, no markdown:
-    [
-      {
-        "title": "Project Name",
-        "description": "What to build and why",
-        "difficulty": "${difficulty}",
-        "techStack": ["Tech1", "Tech2"],
-        "estimatedTime": "X days"
-      }
-    ]
-  `;
+const prompt = `
+You are an expert software mentor.
+
+The student's current level is "${difficulty}".
+
+Generate exactly 9 unique software development project ideas.
+
+Return:
+- 3 Beginner projects
+- 3 Intermediate projects
+- 3 Advanced projects
+
+For each project include:
+
+{
+  "title": "Project Name",
+  "description": "What to build and why",
+  "difficulty": "beginner | intermediate | advanced",
+  "techStack": ["Tech1", "Tech2"],
+  "estimatedTime": "X days",
+  "recommended": true or false
+}
+
+Rules:
+- Set "recommended": true ONLY for projects matching the student's current level ("${difficulty}").
+- Set "recommended": false for all other projects.
+- Projects should be practical, portfolio-worthy, and unique.
+- Use modern technologies like React, Node.js, MongoDB, Express, Next.js, Python, AI, ML, Firebase, etc.
+- Return ONLY a valid JSON array.
+`;
 
   try {
     const completion = await groq.chat.completions.create({
