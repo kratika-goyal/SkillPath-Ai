@@ -13,9 +13,8 @@ import LessonModal from '../components/learning/LessonModal'
 import QuizModal from '../components/learning/QuizModal'
 
 const RoadmapPage = () => {
-  const { roadmap, progress, isLoading, markStep, regenerate, getLesson, getQuiz } = useRoadmap()
+  const { roadmap, progress, isLoading, markStep, getLesson, getQuiz } = useRoadmap()
   const [updating, setUpdating] = useState(null)
-  const [regen, setRegen] = useState(false)
   
   // Learning states
   const [lessonData, setLessonData] = useState({ open: false, topic: '', content: '', loading: false })
@@ -33,19 +32,15 @@ const RoadmapPage = () => {
     }
   }
 
-  const handleRegenerate = async () => {
-    if (!confirm('This will replace your current roadmap. Continue?')) return
-    setRegen(true)
-    try {
-      await regenerate(roadmap.goal, roadmap.level, roadmap.weeklyHours)
-      toast.success('🎉 New roadmap generated!')
-    } catch {
-      toast.error('Failed to regenerate')
-    } finally {
-      setRegen(false)
-    }
-  }
+ const handleCreateNewRoadmap = () => {
+  const confirmed = window.confirm(
+    "Creating a new roadmap will replace your current roadmap and progress. Do you want to continue?"
+  )
 
+  if (!confirmed) return
+
+  window.location.href = "/onboarding"
+}
   const handleLearn = async (step) => {
     setLessonData({ open: true, topic: step.title, content: '', loading: true })
     try {
@@ -99,9 +94,13 @@ const RoadmapPage = () => {
               {roadmap.aiGenerated && <Badge variant="primary">✨ AI Generated</Badge>}
             </div>
           </div>
-          <Button variant="secondary" size="sm" onClick={handleRegenerate} isLoading={regen}>
-            <FiRefreshCw /> Regenerate
-          </Button>
+         <Button
+          variant="primary"
+          size="sm"
+          onClick={handleCreateNewRoadmap}
+        >
+          ✨ Create New Roadmap
+        </Button>
         </div>
 
         {/* Progress bar */}

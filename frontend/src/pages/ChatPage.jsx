@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect } from 'react'
-import { FiSend, FiPlus } from 'react-icons/fi'
+import { FiSend, FiPlus , FiCopy, FiCheck } from 'react-icons/fi'
 import DashboardLayout from '../components/layout/DashboardLayout'
 import useChat from '../hooks/useChat'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 const TypingIndicator = () => (
   <div style={{ display: 'flex', gap: 4, alignItems: 'center', padding: '12px 16px', background: 'var(--color-bg-elevated)', borderRadius: 'var(--radius-lg)', width: 64, borderBottomLeftRadius: 4 }}>
@@ -32,6 +34,19 @@ const ChatPage = () => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend() }
   }
 
+  const handleCopy = async (text, index) => {
+  try {
+    await navigator.clipboard.writeText(text)
+    setCopiedIndex(index)
+
+    setTimeout(() => {
+      setCopiedIndex(null)
+    }, 2000)
+  } catch (err) {
+    console.error('Copy failed', err)
+  }
+}
+
   return (
     <DashboardLayout>
       <div style={{ height: 'calc(100vh - 80px)', display: 'flex', flexDirection: 'column' }}>
@@ -51,8 +66,45 @@ const ChatPage = () => {
                 <div style={{ width: 36, height: 36, borderRadius: '50%', background: msg.role === 'user' ? 'var(--color-accent)' : 'var(--color-primary-glow)', border: `2px solid ${msg.role === 'user' ? 'var(--color-accent)' : 'var(--color-primary)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'var(--text-sm)', fontWeight: 700, flexShrink: 0, color: msg.role === 'user' ? '#0F0F1A' : 'var(--color-primary-light)' }}>
                   {msg.role === 'user' ? 'U' : '🤖'}
                 </div>
-                <div style={{ padding: '12px 16px', borderRadius: 'var(--radius-lg)', fontSize: 'var(--text-sm)', lineHeight: 1.7, whiteSpace: 'pre-wrap', background: msg.role === 'user' ? 'var(--color-primary)' : 'var(--color-bg-elevated)', border: `1px solid ${msg.role === 'user' ? 'transparent' : 'var(--color-border)'}`, color: msg.role === 'user' ? '#fff' : 'var(--color-text)', borderBottomRightRadius: msg.role === 'user' ? 4 : 'var(--radius-lg)', borderBottomLeftRadius: msg.role === 'assistant' ? 4 : 'var(--radius-lg)' }}>
-                  {msg.content}
+                <div style={{ padding: '12px 16px',position: 'relative', borderRadius: 'var(--radius-lg)', fontSize: 'var(--text-sm)', lineHeight: 1.7, whiteSpace: 'pre-wrap', background: msg.role === 'user' ? 'var(--color-primary)' : 'var(--color-bg-elevated)', border: `1px solid ${msg.role === 'user' ? 'transparent' : 'var(--color-border)'}`, color: msg.role === 'user' ? '#fff' : 'var(--color-text)', borderBottomRightRadius: msg.role === 'user' ? 4 : 'var(--radius-lg)', borderBottomLeftRadius: msg.role === 'assistant' ? 4 : 'var(--radius-lg)' }}>
+                  {msg.role === 'assistant' ? (
+  <ReactMarkdown
+  remarkPlugins={[remarkGfm]}
+  components={{
+    p: ({ children }) => (
+      <p style={{ margin: '0 0 8px 0' }}>{children}</p>
+    ),
+
+    ol: ({ children }) => (
+      <ol style={{ margin: '8px 0', paddingLeft: '20px' }}>
+        {children}
+      </ol>
+    ),
+
+    ul: ({ children }) => (
+      <ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
+        {children}
+      </ul>
+    ),
+
+    li: ({ children }) => (
+      <li style={{ marginBottom: '6px' }}>
+        {children}
+      </li>
+    ),
+
+    strong: ({ children }) => (
+      <strong style={{ fontWeight: 600 }}>
+        {children}
+      </strong>
+    ),
+  }}
+>
+  {msg.content}
+</ReactMarkdown>
+  ) : (
+    msg.content
+  )}
                 </div>
               </div>
             ))}

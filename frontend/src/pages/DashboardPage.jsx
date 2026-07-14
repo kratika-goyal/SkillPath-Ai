@@ -1,11 +1,10 @@
 import { Link } from 'react-router-dom'
-import { FiMap, FiMessageSquare, FiFolder, FiBookOpen, FiArrowRight, FiRefreshCw } from 'react-icons/fi'
+import { FiMap, FiMessageSquare, FiFolder, FiBookOpen, FiArrowRight} from 'react-icons/fi'
 import { useAuth } from '../context/AuthContext'
 import DashboardLayout from '../components/layout/DashboardLayout'
 import ProgressRing from '../components/ui/ProgressRing'
 import Spinner from '../components/ui/Spinner'
 import useRoadmap from '../hooks/useRoadmap'
-import { formatDate } from '../utils/helpers'
 
 const StatCard = ({ icon, label, value, color = 'var(--color-primary)' }) => (
   <div className="stat-card">
@@ -32,6 +31,8 @@ const DashboardPage = () => {
   const pct = progress?.percentComplete || 0
   const completed = progress?.completedSteps?.length || 0
   const total = progress?.totalSteps || roadmap?.steps?.length || 0
+ 
+  const completedSet = new Set(progress?.completedSteps || [])
 
   return (
     <DashboardLayout>
@@ -101,18 +102,22 @@ const DashboardPage = () => {
               <Link to="/roadmap"><button className="btn btn--ghost btn--sm">View All <FiArrowRight /></button></Link>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-              {roadmap.steps.slice(0, 4).map((step) => (
+               {roadmap.steps.slice(0, 4).map((step) => {
+                const done = completedSet.has(step.stepNumber)
+
+                return (
                 <div key={step.stepNumber} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)', padding: 'var(--space-3)', background: 'var(--color-bg-elevated)', borderRadius: 'var(--radius-md)' }}>
-                  <div style={{ width: 32, height: 32, borderRadius: '50%', background: step.completed ? 'rgba(16,185,129,0.15)' : 'var(--color-bg-card)', border: `2px solid ${step.completed ? '#10B981' : 'var(--color-border)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'var(--text-xs)', fontWeight: 700, flexShrink: 0, color: step.completed ? '#10B981' : 'var(--color-text-secondary)' }}>
-                    {step.completed ? '✓' : step.stepNumber}
+                  <div style={{ width: 32, height: 32, borderRadius: '50%', background: done ? 'rgba(16,185,129,0.15)' : 'var(--color-bg-card)', border: `2px solid ${done ? '#10B981' : 'var(--color-border)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'var(--text-xs)', fontWeight: 700, flexShrink: 0, color: done ? '#10B981' : 'var(--color-text-secondary)' }}>
+                    {done ? '✓' : step.stepNumber}
                   </div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 600, fontSize: 'var(--text-sm)', textDecoration: step.completed ? 'line-through' : 'none', color: step.completed ? 'var(--color-text-secondary)' : 'var(--color-text)' }}>{step.title}</div>
+                    <div style={{ fontWeight: 600, fontSize: 'var(--text-sm)', textDecoration: done ? 'line-through' : 'none', color: done ? 'var(--color-text-secondary)' : 'var(--color-text)' }}>{step.title}</div>
                     <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>{step.duration}</div>
                   </div>
-                  <span className={`badge badge--${step.completed ? 'success' : 'neutral'}`}>{step.completed ? 'Done' : 'Pending'}</span>
+                  <span className={`badge badge--${done ? 'success' : 'neutral'}`}>{done ? 'Done' : 'Pending'}</span>
                 </div>
-              ))}
+                )
+})}
             </div>
           </div>
         )}

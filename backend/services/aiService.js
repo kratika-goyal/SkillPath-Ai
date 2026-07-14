@@ -72,40 +72,48 @@ export const generateRoadmapWithAI = async (goal, level, weeklyHours) => {
   }
 };
 
-export const generateProjectRecommendations = async (difficulty) => {
+export const generateProjectRecommendations = async (learningGoal, difficulty) => {
   const groq = getGroq();
+
   if (!groq) {
-    return generateFallbackProjects(difficulty);
+    return generateFallbackProjects(learningGoal, difficulty);
   }
 
-const prompt = `
+  const prompt = `
 You are an expert software mentor.
 
-The student's current level is "${difficulty}".
+The student wants to learn:
 
-Generate exactly 9 unique software development project ideas.
+"${learningGoal}"
+
+Their current level is:
+
+"${difficulty}"
+
+Generate exactly 9 project ideas ONLY related to "${learningGoal}".
 
 Return:
+
 - 3 Beginner projects
 - 3 Intermediate projects
 - 3 Advanced projects
 
-For each project include:
+Each project must contain:
 
 {
   "title": "Project Name",
-  "description": "What to build and why",
+  "description": "What to build",
   "difficulty": "beginner | intermediate | advanced",
   "techStack": ["Tech1", "Tech2"],
   "estimatedTime": "X days",
-  "recommended": true or false
+  "recommended": true
 }
 
 Rules:
-- Set "recommended": true ONLY for projects matching the student's current level ("${difficulty}").
-- Set "recommended": false for all other projects.
-- Projects should be practical, portfolio-worthy, and unique.
-- Use modern technologies like React, Node.js, MongoDB, Express, Next.js, Python, AI, ML, Firebase, etc.
+- Every project MUST belong to "${learningGoal}".
+- Never generate projects from another domain.
+- Make them portfolio-worthy.
+- Use technologies relevant to "${learningGoal}".
 - Return ONLY a valid JSON array.
 `;
 
@@ -118,11 +126,11 @@ Rules:
 
     let content = completion.choices[0]?.message?.content || '[]';
     content = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-    
+
     return JSON.parse(content);
   } catch (error) {
     console.error('AI Project Generation Error:', error.message);
-    return generateFallbackProjects(difficulty);
+    return generateFallbackProjects(learningGoal, difficulty);
   }
 };
 

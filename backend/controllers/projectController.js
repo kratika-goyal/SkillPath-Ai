@@ -6,10 +6,15 @@ import { generateProjectRecommendations } from '../services/aiService.js';
 // @route   GET /api/projects/recommendations
 // @access  Private
 export const getRecommendations = async (req, res) => {
-  const profile = await Profile.findOne({ user: req.user._id });
-  const difficulty = profile ? profile.currentLevel : 'beginner';
+ const profile = await Profile.findOne({ user: req.user._id });
 
-  const projects = await generateProjectRecommendations(difficulty);
+const difficulty = profile?.currentLevel || 'beginner';
+const learningGoal = profile?.learningGoal || 'Web Development';
+
+const projects = await generateProjectRecommendations(
+  learningGoal,
+  difficulty
+);
   res.json({ projects });
 };
 
